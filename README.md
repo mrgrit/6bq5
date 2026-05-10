@@ -3,6 +3,12 @@
 CCC 의 Knowledge Graph 를 의도적으로 변조했을 때 LLM-기반 사이버 공격이 어떻게
 달라지는지 실험하고, 그에 대한 보호 체계를 개발하기 위한 통합 플랫폼.
 
+> **문서 빠른 링크**
+> - 5분 설치: [docs/SETUP.md](docs/SETUP.md)
+> - 전체 매뉴얼: [docs/MANUAL.md](docs/MANUAL.md) — 12장 (아키텍처 · API · UI · 워크플로우 · 운영 · 트러블슈팅 · 확장)
+> - 연구 근거: [docs/research-survey.md](docs/research-survey.md)
+> - 후속 과제: [docs/inflight-projects.md](docs/inflight-projects.md)
+
 세 저장소를 한 화면에서 운용한다:
 
 | 출처 | 사용처 |
