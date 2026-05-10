@@ -116,6 +116,30 @@ curl -s http://localhost:8500/ | head -3
 # → <!doctype html> ...
 ```
 
+## 업그레이드 (이미 설치된 서버)
+
+```bash
+cd ~/6bq5
+./upgrade.sh                # 기본: 사용자의 kg.db (실험·노트·snapshot) 보존
+./upgrade.sh --reset-kg     # kg.db 도 repo baseline 으로 리셋 (백업 후)
+./upgrade.sh --no-restart   # 서버 재기동 생략
+```
+
+흐름:
+1. `data/kg.db` 자동 백업 → `.upgrade_backups/kg-<timestamp>.db`
+2. systemd `6bq5` 서비스 떠 있으면 stop
+3. 사용자 코드 변경 `git stash`
+4. `git pull` (kg.db 는 `--reset-kg` 없을 때 보존)
+5. `pip install -r backend/requirements.txt` (변경분 자동 반영)
+6. 서비스 재기동 (systemd 또는 `./run.sh` background)
+
+롤백:
+```bash
+cp .upgrade_backups/kg-YYYYMMDD-HHMMSS.db data/kg.db
+git reset --hard <이전-커밋>     # 코드도 롤백 필요시
+./run.sh
+```
+
 ## 자주 나는 함정 (Top 5)
 
 | 함정 | 해결 |

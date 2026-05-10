@@ -760,7 +760,29 @@ git checkout data/kg.db   # repo 안의 sanitize 스냅샷으로 reset
 watch -n 5 'curl -s :8500/api/health | jq .'
 ```
 
-### 9.5. systemd 서비스 (선택)
+### 9.5. 업그레이드 (`./upgrade.sh`)
+
+```bash
+cd ~/6bq5
+./upgrade.sh                  # 사용자 kg.db 보존
+./upgrade.sh --reset-kg       # kg.db 도 baseline 으로 (실험 데이터 날아감, 백업은 됨)
+./upgrade.sh --no-restart     # 서버 재기동 안 함
+```
+
+자동 처리:
+- `.upgrade_backups/kg-<ts>.db` 로 KG 백업
+- systemd `6bq5` 서비스 stop → git pull → deps 업데이트 → 서비스 start
+- 사용자 코드 변경은 `git stash` 후 `git stash pop` 으로 보존 (충돌 시 수동 해결)
+- `kg.db` 는 git update-index --skip-worktree 트릭으로 pull 시 덮이는 것 방지
+
+롤백:
+```bash
+cp .upgrade_backups/kg-<ts>.db data/kg.db
+git reset --hard <이전-commit-hash>
+./run.sh
+```
+
+### 9.6. systemd 서비스 (선택)
 
 `/etc/systemd/system/6bq5.service`:
 ```
