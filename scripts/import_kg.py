@@ -6,10 +6,13 @@ this script when you want to refresh from a *new* CCC source.
 Source: env `SRC_KG` (default tries common CCC paths, then aborts).
 Target: `../data/kg.db` (overwritten — back up first if needed).
 
-Removes anything tagged as precinct6:
+Removes anything tagged as precinct6 (any of):
   - nodes with id LIKE 'asset:p6:%'
-  - nodes with meta JSON containing "precinct6"
+  - nodes with id LIKE 'asset:100.64.%'           (precinct6 sample subnet)
+  - nodes with id LIKE 'asset:172.%' AND no edges (precinct6 random hosts)
+  - nodes with meta or content containing "precinct6"
   - history_anchors of kind='ioc' (precinct6 IoC dump)
+  - history_anchors with body / related_ids referencing precinct6 IPs
   - dangling edges that referenced removed nodes
 """
 from __future__ import annotations
@@ -50,10 +53,14 @@ def _resolve_src() -> str:
 SRC = _resolve_src() if __name__ == "__main__" else ""
 
 
-def _is_precinct(node_id: str, meta_text: str) -> bool:
+def _is_precinct(node_id: str, meta_text: str, content_text: str = "") -> bool:
     if node_id.startswith("asset:p6:"):
         return True
+    if node_id.startswith("asset:100.64."):
+        return True
     if "precinct6" in (meta_text or ""):
+        return True
+    if "precinct6" in (content_text or ""):
         return True
     return False
 
@@ -70,12 +77,24 @@ def main() -> None:
     con = sqlite3.connect(DST)
     cur = con.cursor()
 
-    # ── 1. precinct6 노드 식별 ──────────────────────────────
-    cur.execute("SELECT id, meta FROM nodes")
+    # ── 1. precinct6 노드 식별 (id + meta + content) ────────
+    cur.execute("SELECT id, meta, content FROM nodes")
     drop_ids = [
-        nid for (nid, m) in cur.fetchall() if _is_precinct(nid, m or "")
+        nid for (nid, m, c) in cur.fetchall()
+        if _is_precinct(nid, m or "", c or "")
     ]
-    print(f"[scan] precinct6 nodes to drop: {len(drop_ids)}")
+
+    # 추가: 엣지가 0 인 asset:172.* (precinct6 random subnet 잔재)
+    cur.execute("""
+        SELECT n.id FROM nodes n
+        WHERE n.id LIKE 'asset:172.%'
+          AND NOT EXISTS (SELECT 1 FROM edges e WHERE e.src=n.id OR e.dst=n.id)
+    """)
+    orphan_172 = [r[0] for r in cur.fetchall()]
+    drop_ids.extend(orphan_172)
+    print(f"[scan] precinct6-tagged nodes: {len(drop_ids) - len(orphan_172)}")
+    print(f"[scan] orphan asset:172.* nodes: {len(orphan_172)}")
+    print(f"[scan] total to drop: {len(drop_ids)}")
 
     # ── 2. 노드 + FTS + 엣지 삭제 ───────────────────────────
     BATCH = 500
@@ -89,9 +108,16 @@ def main() -> None:
             chunk + chunk,
         )
 
-    # ── 3. precinct6 IoC anchor 삭제 ────────────────────────
+    # ── 3. precinct6 anchor 전부 제거 ────────────────────────
+    # IoC dump + breach_record 중 precinct6 IP 를 본문/related_ids 에 가진 것
     cur.execute("DELETE FROM history_anchors WHERE kind='ioc'")
-    print(f"[scrub] removed history_anchors kind=ioc rows")
+    cur.execute("""
+        DELETE FROM history_anchors
+        WHERE body LIKE '%100.64.%'
+           OR related_ids LIKE '%100.64.%'
+           OR body LIKE '%precinct6%'
+    """)
+    print("[scrub] removed precinct6 anchors (ioc + breach_record refs)")
 
     # ── 4. 6bq5 전용 테이블 생성 ────────────────────────────
     cur.executescript(

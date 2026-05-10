@@ -52,26 +52,34 @@ LLM 기반 공격이 어떻게 강화/우회되는지** 를 측정하고, 이에
 
 ### 1.3. 무엇이 KG 에 들어 있나
 
-CCC 원본에서 **precinct6 외부 데이터를 제거** 한 sanitize 스냅샷:
+CCC 원본에서 **precinct6 외부 데이터를 완전 제거** 한 sanitize 스냅샷
+(2026-05-10 강화 버전 — content / 100.64.* / orphan 172.* / anchor refs 모두 정리):
 
 | node type | count | 의미 |
 |-----------|-------|------|
-| Asset | 3,382 | 자산 (호스트 · 사용자 · 프로세스 · 컨테이너) |
 | KPI | 91 | 지표 |
 | Goal | 79 | 목표 |
 | Vision | 51 | 비전 |
-| Todo | 43 | 할일 |
 | Plan | 42 | 계획 |
+| Todo | 42 | 할일 |
 | Mission | 37 | 미션 |
 | Strategy | 30 | 전략 |
-| Concept | 21 | 추상 개념 (MITRE 기법, 카테고리 등) |
+| Asset | 19 | 자산 (CCC 아키 12 + VM 5 + named 2) |
+| Concept | 19 | 추상 개념 (MITRE 기법, 카테고리 등) |
 | Skill | 18 | 원자 도구 |
 | Playbook | 8 | 워크플로우 정의 |
-| **합계** | **3,802** | |
+| **합계** | **436** | |
 
-엣지: **497개** (8 종 — derives_from / measures / contributes_to / realizes / uses / handles / targets / monitors)
+여기에 `POST /api/infra/sync` 가 6v6 컨테이너 16 + 네트워크 4 = 20 노드 + 19 엣지를
+추가해 **456 노드 / 515 엣지** 가 운영 baseline.
 
-History: **10,657개** breach_record anchor (시계열 IR 사건 기록)
+엣지: **496개** (8 종 — derives_from / measures / contributes_to / realizes / uses / handles / targets / monitors)
+
+History: **83개** anchor (precinct6 IoC 4,363 + 100.64 referencing breach_record 10,574 모두 제거됨)
+
+> **변경 이력**: 초기 v0.1.0 은 sanitize 가 `meta` 와 `id` 만 검사 → precinct6
+> 노드 4,879 개가 `content` 로 빠져나감. v0.1.1 에서 `content` + 100.64.* prefix +
+> orphan 172.* + anchor body 까지 검사하도록 강화.
 
 ---
 
