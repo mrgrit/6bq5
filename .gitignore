@@ -1,5 +1,7 @@
 # 6bq5 ignore list
-data/kg.db
+# data/kg.db is committed (sanitized snapshot — precinct6 removed) so the
+# platform works after `git clone` without needing the CCC source repo.
+# Only ignore the runtime WAL/SHM sidecars.
 data/kg.db-shm
 data/kg.db-wal
 frontend/node_modules/

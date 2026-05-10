@@ -1,7 +1,10 @@
-"""Import sanitized CCC KG into 6bq5 platform.
+"""(Re-)import sanitized CCC KG into 6bq5 platform.
 
-Source : /home/opsclaw/ccc/data/bastion_graph.db   (or BASTION_GRAPH_DB env)
-Target : ../data/kg.db
+The repository ALREADY ships `data/kg.db` (precinct6 stripped). You only need
+this script when you want to refresh from a *new* CCC source.
+
+Source: env `SRC_KG` (default tries common CCC paths, then aborts).
+Target: `../data/kg.db` (overwritten — back up first if needed).
 
 Removes anything tagged as precinct6:
   - nodes with id LIKE 'asset:p6:%'
@@ -19,11 +22,32 @@ import sys
 from pathlib import Path
 
 
-SRC = os.environ.get(
-    "SRC_KG", "/home/opsclaw/ccc/data/bastion_graph.db"
-)
 HERE = Path(__file__).resolve().parent
 DST = (HERE.parent / "data" / "kg.db").resolve()
+
+
+def _resolve_src() -> str:
+    if os.environ.get("SRC_KG"):
+        return os.environ["SRC_KG"]
+    candidates = [
+        os.path.expanduser("~/ccc/data/bastion_graph.db"),
+        "/home/opsclaw/ccc/data/bastion_graph.db",
+        "/opt/ccc/data/bastion_graph.db",
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    print(
+        "[FATAL] no CCC bastion_graph.db found.\n"
+        "Set SRC_KG=/path/to/bastion_graph.db, or skip this script — the\n"
+        "repository already includes a pre-sanitized data/kg.db that works\n"
+        "out of the box.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+SRC = _resolve_src() if __name__ == "__main__" else ""
 
 
 def _is_precinct(node_id: str, meta_text: str) -> bool:
@@ -35,16 +59,13 @@ def _is_precinct(node_id: str, meta_text: str) -> bool:
 
 
 def main() -> None:
-    if not os.path.isfile(SRC):
-        print(f"[FATAL] source KG not found: {SRC}", file=sys.stderr)
-        sys.exit(1)
-
+    src = _resolve_src()
     DST.parent.mkdir(parents=True, exist_ok=True)
     if DST.exists():
         DST.unlink()
 
-    print(f"[copy] {SRC} -> {DST}")
-    shutil.copy2(SRC, DST)
+    print(f"[copy] {src} -> {DST}")
+    shutil.copy2(src, DST)
 
     con = sqlite3.connect(DST)
     cur = con.cursor()

@@ -1,6 +1,9 @@
 """6v6 docker-infra control + bastion agent reachability.
 
-Runs `docker compose` against /home/opsclaw/6v6 (override with INFRA_DIR).
+Runs `docker compose` against the directory in INFRA_DIR (env). If unset,
+auto-detects ~/6v6 or /opt/6v6, otherwise the infra commands return rc=-3
+with a helpful message — the rest of the platform still works.
+
 All commands are recorded into infra_events for audit.
 """
 from __future__ import annotations
@@ -13,7 +16,16 @@ from typing import Any
 from .db import conn
 
 
-INFRA_DIR = os.environ.get("INFRA_DIR", "/home/opsclaw/6v6")
+def _resolve_infra() -> str:
+    if os.environ.get("INFRA_DIR"):
+        return os.environ["INFRA_DIR"]
+    for c in [os.path.expanduser("~/6v6"), "/home/opsclaw/6v6", "/opt/6v6"]:
+        if os.path.isdir(c) and os.path.isfile(os.path.join(c, "docker-compose.yaml")):
+            return c
+    return ""
+
+
+INFRA_DIR = _resolve_infra()
 
 
 def _record(host: str, op: str, status: str, output: str) -> int:
@@ -26,6 +38,14 @@ def _record(host: str, op: str, status: str, output: str) -> int:
 
 
 def _run(cmd: list[str], timeout: int = 60) -> dict:
+    if not INFRA_DIR:
+        return {
+            "rc": -3,
+            "stdout": "",
+            "stderr": "INFRA_DIR not set and no 6v6 directory found. "
+            "Clone https://github.com/mrgrit/6v6 next to 6bq5/ or "
+            "set INFRA_DIR=/path/to/6v6.",
+        }
     try:
         p = subprocess.run(
             cmd, cwd=INFRA_DIR, capture_output=True, text=True, timeout=timeout

@@ -3,8 +3,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 if [ ! -f data/kg.db ]; then
-  echo "[1/3] importing KG (precinct6 제외)…"
+  echo "[1/3] data/kg.db missing — running import_kg.py…"
   python3 scripts/import_kg.py
+else
+  echo "[1/3] data/kg.db present (skipping import — pre-sanitized snapshot in repo)"
 fi
 
 if [ ! -d frontend/dist ]; then
