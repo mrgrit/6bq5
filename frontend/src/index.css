@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans KR", sans-serif; }
+
+.card { @apply bg-ink-900 border border-ink-100/10 rounded-xl p-4 shadow; }
+.btn  { @apply px-3 py-1.5 rounded-md text-sm font-medium transition; }
+.btn-primary  { @apply btn bg-kg-600 hover:bg-kg-500 text-white; }
+.btn-attack   { @apply btn bg-attack-600 hover:bg-attack-500 text-white; }
+.btn-defense  { @apply btn bg-defense-600 hover:bg-defense-500 text-white; }
+.btn-ghost    { @apply btn bg-ink-100/5 hover:bg-ink-100/10 text-ink-100; }
+.input        { @apply px-2 py-1.5 bg-ink-950 border border-ink-100/15 rounded-md text-sm w-full text-ink-50 focus:outline-none focus:border-kg-500; }
+.tag          { @apply text-xs px-1.5 py-0.5 rounded bg-ink-100/10; }
+.tag-attack   { @apply tag bg-attack-600/30 text-attack-500; }
+.tag-defense  { @apply tag bg-defense-600/30 text-defense-500; }
+.tag-kg       { @apply tag bg-kg-600/30 text-kg-500; }
+.kbd          { @apply font-mono text-[11px] px-1.5 py-0.5 rounded bg-ink-100/10 border border-ink-100/15; }
+table.tbl     { @apply w-full text-sm; }
+table.tbl th  { @apply text-left text-xs uppercase text-ink-100/60 px-2 py-1 border-b border-ink-100/10; }
+table.tbl td  { @apply px-2 py-1.5 border-b border-ink-100/5 align-top; }
+.scroll-area  { @apply overflow-auto; }
