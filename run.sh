@@ -42,12 +42,17 @@ if [ ! -f data/kg.db ]; then
   python scripts/import_kg.py
 fi
 
-# CCC SKILLS dict (33) + playbook YAML 을 한 번 더 KG 로 sync
-# (존재하는 CCC repo 가 있을 때만 — 없으면 silently skip)
+# 옵션 1: CCC SKILLS dict (33) + 운영 playbook YAML (8) 동기화
+# (CCC repo 가 로컬에 있을 때만 — 없으면 skip)
 if [ -d "$HOME/ccc" ] || [ -n "${CCC_HOME:-}" ]; then
-  if python -c "import sys; sys.exit(0)" 2>/dev/null; then
-    python scripts/sync_ccc_skills_playbooks.py 2>/dev/null | tail -3 || true
-  fi
+  python scripts/sync_ccc_skills_playbooks.py 2>/dev/null | tail -3 || true
+fi
+
+# 옵션 2: 운영 중인 CCC 서버 (REMOTE_BASTION) 의 진짜 누적 KG 끌어오기
+# (Playbook + Experience 수천 개. 환경변수 설정된 경우만)
+if [ -n "${REMOTE_BASTION:-}" ]; then
+  echo "[+]   syncing real KG from $REMOTE_BASTION..."
+  python scripts/sync_real_kg.py 2>/dev/null | tail -10 || true
 fi
 
 # ── 4. frontend ──────────────────────────────────────────────

@@ -82,6 +82,21 @@ SRC_KG=/path/to/bastion_graph.db python3 scripts/import_kg.py
 
 `SRC_KG` 미지정 시 `~/ccc/data/bastion_graph.db` 등을 자동 탐색.
 
+### 운영 CCC 서버의 진짜 KG 끌어오기 (선택, 권장)
+
+로컬 CCC repo 의 `bastion_graph.db` 는 **stale 한 사본**일 수 있습니다 — 실제로
+ReAct 사이클을 돌리는 운영 bastion 은 별도 머신 (예: `192.168.0.103:8003`)
+이고, 그쪽에 진짜 Playbook · Experience 가 누적되어 있습니다.
+
+```bash
+REMOTE_BASTION=http://192.168.0.103:8003 \
+REMOTE_API_KEY=ccc-api-key-2026 \
+  python3 scripts/sync_real_kg.py
+```
+
+→ Playbook 8 → **2,102** (실제 작업 누적분), Experience 0 → **2,501** 자동 등록.
+→ `run.sh` 도 `REMOTE_BASTION` 환경변수 있으면 자동 호출.
+
 ### 6v6 인프라 + bastion agent 연동 (선택)
 
 `Pentest Workbench` 의 “execute” 와 `6v6 Console` 페이지는 외부 docker-compose

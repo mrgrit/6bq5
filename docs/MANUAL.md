@@ -53,22 +53,31 @@ LLM 기반 공격이 어떻게 강화/우회되는지** 를 측정하고, 이에
 ### 1.3. 무엇이 KG 에 들어 있나
 
 CCC 원본에서 **precinct6 외부 데이터를 완전 제거** 한 sanitize 스냅샷
-(2026-05-10 강화 버전 — content / 100.64.* / orphan 172.* / anchor refs 모두 정리):
++ **CCC 운영 머신 (192.168.0.103:8003) 의 진짜 누적 KG 동기화** (v0.1.2):
 
 | node type | count | 의미 |
 |-----------|-------|------|
+| **Playbook** | **2,102** | ReAct 사이클로 누적된 `pb-auto-*` + 운영 yaml 8 |
+| **Experience** | **2,501** | ReAct 사이클마다 1개 — 실제 작업 흔적 |
 | KPI | 91 | 지표 |
 | Goal | 79 | 목표 |
 | Vision | 51 | 비전 |
 | Plan | 42 | 계획 |
 | Todo | 42 | 할일 |
+| Asset | 40 | 자산 (CCC 아키 12 + VM 5 + 6v6 16 + 기타 7) |
 | Mission | 37 | 미션 |
+| Skill | 33 | 원자 도구 (CCC 9 카테고리) |
 | Strategy | 30 | 전략 |
-| Asset | 19 | 자산 (CCC 아키 12 + VM 5 + named 2) |
-| Concept | 19 | 추상 개념 (MITRE 기법, 카테고리 등) |
-| Skill | 18 → **33** (sync 후) | 원자 도구 |
-| Playbook | 8 | 워크플로우 정의 |
-| **합계** | **436 → 451** | |
+| Concept | 24 | 추상 개념 (MITRE 기법 + 카테고리) |
+| **합계** | **5,072** | |
+
+**엣지 16,118개** (uses 5,789 / targets 4,318 / handles 2,737 / derived_from 2,501 ...)
+**anchors 83개** (precinct6 referencing 모두 제거됨)
+
+> **v0.1.2 핵심 변경**: 초기 import_kg.py 는 로컬 `~/ccc/data/bastion_graph.db`
+> 만 봤는데 그건 stale 한 사본이었다. 진짜 누적 KG 는 별도 머신
+> (192.168.0.103:8003) 에 있고 `scripts/sync_real_kg.py` 가 HTTP 로 끌어온다.
+> Playbook 8 → **2,102** (ReAct 누적분 2,094 신규 등록).
 
 > **Skill 18 vs 33 갭**: CCC 코드 dict 에는 33개가 있는데 KG seed 가 18개에서 멈춤
 > (CCC inflight P10 미완 — R3 동적 확장이 코드만 반영되고 KG 미반영).
