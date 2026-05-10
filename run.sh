@@ -42,6 +42,14 @@ if [ ! -f data/kg.db ]; then
   python scripts/import_kg.py
 fi
 
+# CCC SKILLS dict (33) + playbook YAML 을 한 번 더 KG 로 sync
+# (존재하는 CCC repo 가 있을 때만 — 없으면 silently skip)
+if [ -d "$HOME/ccc" ] || [ -n "${CCC_HOME:-}" ]; then
+  if python -c "import sys; sys.exit(0)" 2>/dev/null; then
+    python scripts/sync_ccc_skills_playbooks.py 2>/dev/null | tail -3 || true
+  fi
+fi
+
 # ── 4. frontend ──────────────────────────────────────────────
 if [ ! -d frontend/dist ]; then
   if command -v npm >/dev/null 2>&1; then
