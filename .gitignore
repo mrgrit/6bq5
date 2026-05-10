@@ -5,7 +5,9 @@
 data/kg.db-shm
 data/kg.db-wal
 frontend/node_modules/
-frontend/dist/
+# frontend/dist is committed so a fresh Linux box (no node/npm) can run
+# the platform with Python only. Re-build with `cd frontend && npm run build`
+# only when you've modified frontend source.
 __pycache__/
 *.pyc
 .venv/
