@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import defense, infra, kg_ops, llm, poison
+from . import defense, infra, kg_ops, llm, poison, sync_infra
 from .db import conn
 
 
@@ -490,6 +490,12 @@ def infra_exec(service: str, p: InfraExecIn):
 @app.get("/api/infra/history")
 def infra_history(limit: int = 100):
     return infra.history(limit)
+
+
+@app.post("/api/infra/sync")
+def infra_sync():
+    """Introspect 6v6 docker → upsert Asset nodes + network edges into KG."""
+    return sync_infra.sync()
 
 
 # ── Bastion proxy ─────────────────────────────────────────────────

@@ -124,6 +124,7 @@ export const api = {
     exec: (s, command) =>
       req('/api/infra/exec/' + s, { method: 'POST', body: JSON.stringify({ command }) }),
     history: () => req('/api/infra/history'),
+    sync: () => req('/api/infra/sync', { method: 'POST' }),
   },
 
   bastion: {

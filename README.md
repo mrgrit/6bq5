@@ -84,8 +84,18 @@ SRC_KG=/path/to/bastion_graph.db python3 scripts/import_kg.py
 ```bash
 git clone https://github.com/mrgrit/6v6      # 옆 디렉토리
 git clone https://github.com/mrgrit/bastion  # 옆 디렉토리
+docker-compose -f 6v6/docker-compose.yaml up -d
 INFRA_DIR=$PWD/6v6  BASTION_URL=http://localhost:9100  ./run.sh
 ```
+
+**6v6 → KG 자동 등록**: 6v6 가 떠 있는 상태에서 `6v6 Console → ↻ Sync to KG`
+버튼을 누르면 (또는 `curl -X POST :8500/api/infra/sync`):
+- 모든 6v6 컨테이너를 `asset:6v6:<role>` 노드로 upsert (IP · 이미지 · 호스트네임 · 네트워크 · 상태 · 포트)
+- docker network 마다 `net:6v6:<netname>` Concept 노드 생성 (cidr 포함)
+- 같은 네트워크에 있는 노드끼리 `connects_to` 엣지 자동 연결
+- 사라진 컨테이너는 `meta.stale=true` 로 마킹 (삭제 X — diff 가능)
+
+→ 이후 Pentest / Manipulation / Defense 가 **실시간 인프라 토폴로지 위에서 동작**.
 
 미설치여도 KG 변조 / 가치 매트릭스 / poison recipe / defense detector / 스냅샷
 diff / RAG trace / memory trace / notes 등 **대부분의 기능은 바로 동작**.

@@ -28,11 +28,17 @@ export default function Infra() {
         <p className="text-ink-100/60 text-sm">/home/opsclaw/6v6 docker-compose 조작. attacker / fw / web / bastion / siem 컨테이너 접근.</p>
       </div>
 
-      <div className="card flex gap-2">
+      <div className="card flex gap-2 items-center">
         <button className="btn-defense" onClick={up}>compose up -d</button>
         <button className="btn-attack" onClick={down}>compose down</button>
         <button className="btn-ghost" onClick={reload}>↻ refresh</button>
+        <button className="btn-primary" onClick={async () => {
+          const r = await api.infra.sync(); alert('synced: '+r.containers_synced+' containers, '+r.networks_synced+' nets, '+r.edges_added+' edges')
+        }}>↻ Sync to KG</button>
         <span className="ml-auto text-xs text-ink-100/60">{status?.infra_dir}</span>
+      </div>
+      <div className="text-[11px] text-ink-100/60">
+        “Sync to KG” → docker inspect 로 각 6v6 컨테이너의 IP·네트워크·역할을 KG <code>asset:6v6:&lt;name&gt;</code> 노드로 upsert + <code>net:6v6:&lt;net&gt;</code> Concept 생성. 사라진 컨테이너는 <code>meta.stale=true</code>.
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
